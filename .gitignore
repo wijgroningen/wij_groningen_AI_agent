@@ -1,0 +1,13 @@
+
+# folders
+/.venv
+/__pycache__
+/instance
+/documents
+documentation/
+
+# files
+*.pyc
+
+# log files
+*.log
