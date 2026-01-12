@@ -1,6 +1,7 @@
 
 # folders
 /.venv
+/venv
 /__pycache__
 /instance
 /documents
