@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resultaten — WIJ Groningen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="page">
+    <div class="search-box">
+      <a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/></a>
+      <form action="{{ url_for('search') }}" method="get" class="search-form" role="search">
+        <input type="text" name="q" class="search-input" value="{{ q }}" autofocus>
+        <button type="submit" class="search-button">Zoek</button>
+      </form>
+    </div>
+
+    <main class="results-main">
+      {% if q %}
+        <div class="result-container">
+          <p class="result-question">Vraag: <strong>{{ q }}</strong></p>
+          {% if error %}
+            <p class="result-error">{{ error }}</p>
+          {% elif answer %}
+            <div class="result-answer">
+              <p class="answer-label">Antwoord:</p>
+              <p class="answer-text">{{ answer }}</p>
+            </div>
+          {% else %}
+            <p class="note">Bezig met laden...</p>
+          {% endif %}
+        </div>
+      {% else %}
+        <p class="result-text">Voer een zoekopdracht in de balk hierboven in.</p>
+      {% endif %}
+    </main>
+  </div>
+</body>
+</html>

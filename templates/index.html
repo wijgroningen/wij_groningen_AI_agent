@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WIJ Groningen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="page">
+    <div class="search-box">
+      <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/>
+      <form action="{{ url_for('search') }}" method="get" class="search-form" role="search">
+        <input type="text" name="q" class="search-input" placeholder="Zoek in WIJ Groningen..." autofocus>
+        <button type="submit" class="search-button">Zoek</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -8,6 +8,7 @@ documentation/
 
 # files
 *.pyc
+apikey.txt
 
 # log files
 *.log
