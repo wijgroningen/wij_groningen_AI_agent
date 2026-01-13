@@ -23,10 +23,12 @@
           <p class="result-question">Vraag: <strong>{{ q }}</strong></p>
           {% if error %}
             <p class="result-error">{{ error }}</p>
-          {% elif answer %}
+          <!-- {% elif answer %} -->
+           {% elif html_answer %}
             <div class="result-answer">
               <p class="answer-label">Antwoord:</p>
-              <p class="answer-text">{{ answer }}</p>
+              <!-- <p class="answer-text">{{ answer }}</p> -->
+              <p class="answer-text">{{ html_answer | safe }}</p>
             </div>
           {% else %}
             <p class="note">Bezig met laden...</p>

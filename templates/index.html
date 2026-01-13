@@ -9,13 +9,37 @@
 </head>
 <body>
   <div class="page">
+    <div class="cases-container">
+      <div class="case-card">
+        <h3 class="case-title">Harry</h3>
+        <p class="case-description">Harry is een jongen van 9, woont bij zijn moeder, ouders zijn gescheiden, wel goede relatie. Harry gaat niet goed op school, weinig contact met anderen soms aggressief. Oma (moeder) woont vlakbij, zou wel meer betrokken willen zijn, vader wil dit niet. Moeder heeft het niet breed en is niet goed in de Nederlandse taal.</p>
+        <button class="case-button" data-description="Harry is een jongen van 9, woont bij zijn moeder, ouders zijn gescheiden, wel goede relatie. Harry gaat niet goed op school, weinig contact met anderen soms aggressief. Oma (moeder) woont vlakbij, zou wel meer betrokken willen zijn, vader wil dit niet. Moeder heeft het niet breed en is niet goed in de Nederlandse taal. Maak een gezinsplan">Maak een gezinsplan</button>
+      </div>
+      <div class="case-card">
+        <h3 class="case-title">Hanna</h3>
+        <p class="case-description">Hanna is 16 jaar en is in 2020 vanuit Syrie naar Nederland gevlucht. Sindsdien woont ze in een AZC en ze wacht nog steeds op een verblijfsvergunning. Ze weet niet of haar ouders nog in leven zijn. Haar 2 broers wonen in Aleppo en ze heeft wekelijks contact met hen. Ze ervaart eenzaamheid en heeft, als gevolg van de oorlog, angstklachten.</p>
+        <button class="case-button" data-description="Hanna is 16 jaar en is in 2020 vanuit Syrie naar Nederland gevlucht. Sindsdien woont ze in een AZC en ze wacht nog steeds op een verblijfsvergunning. Ze weet niet of haar ouders nog in leven zijn. Haar 2 broers wonen in Aleppo en ze heeft wekelijks contact met hen. Ze ervaart eenzaamheid en heeft, als gevolg van de oorlog, angstklachten. Maak een gezinsplan">Maak een gezinsplan</button>
+      </div>
+    </div>
     <div class="search-box">
       <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/>
       <form action="{{ url_for('search') }}" method="get" class="search-form" role="search">
-        <input type="text" name="q" class="search-input" placeholder="Zoek in WIJ Groningen..." autofocus>
+        <input type="text" id="search-input-main" name="q" class="search-input" placeholder="Zoek in WIJ Groningen..." autofocus>
         <button type="submit" class="search-button">Zoek</button>
       </form>
     </div>
   </div>
+
+  <script>
+    document.querySelectorAll('.case-button').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const description = this.getAttribute('data-description');
+        const searchInput = document.getElementById('search-input-main');
+        searchInput.value = description;
+        searchInput.focus();
+      });
+    });
+  </script>
 </body>
 </html>
