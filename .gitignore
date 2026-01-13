@@ -10,6 +10,7 @@ documentation/
 # files
 *.pyc
 apikey.txt
+test_mistral.py
 
 # log files
 *.log
