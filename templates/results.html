@@ -4,40 +4,114 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Resultaten — WIJ Groningen</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --green: #009e4d;
+      --green-dark: #226644;
+    }
+    body {
+      background-color: #ffffff;
+      padding-top: 100px;
+    }
+    .logo-bar {
+      background-color: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 12px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .logo-bar a {
+      display: flex;
+      align-items: center;
+    }
+    .logo-small {
+      height: 50px;
+      width: auto;
+    }
+    .search-form-header {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+    .search-input {
+      border-radius: 999px;
+    }
+    .search-button {
+      background-color: var(--green);
+      border-color: var(--green);
+      color: white;
+      border-radius: 999px;
+    }
+    .search-button:hover {
+      background-color: var(--green-dark);
+      border-color: var(--green-dark);
+    }
+    .result-answer {
+      background-color: #f0f8f4;
+      border-left: 4px solid var(--green);
+      border-radius: 6px;
+      margin-top: 15px;
+      padding: 20px;
+    }
+    .answer-label {
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    .result-question {
+      font-size: 18px;
+      color: #222;
+      margin-bottom: 20px;
+    }
+  </style>
   <meta name="robots" content="noindex">
 </head>
 <body>
-  <div class="page">
-    <div class="search-box">
-      <a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/></a>
-      <form action="{{ url_for('search') }}" method="get" class="search-form" role="search">
-        <input type="text" name="q" class="search-input" value="{{ q }}" autofocus>
-        <button type="submit" class="search-button">Zoek</button>
-      </form>
-    </div>
+  <div class="logo-bar">
+    <a href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo-small"/>
+    </a>
+    <form action="{{ url_for('search') }}" method="get" class="search-form-header" role="search">
+      <div class="input-group" style="width: 420px;">
+        <input type="text" name="q" class="form-control search-input" value="{{ q }}" autofocus>
+        <button class="btn search-button" type="submit">Zoek</button>
+      </div>
+    </form>
+  </div>
 
-    <main class="results-main">
-      {% if q %}
-        <div class="result-container">
+  <main class="container-lg py-5">
+    {% if q %}
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
           <p class="result-question">Vraag: <strong>{{ q }}</strong></p>
           {% if error %}
-            <p class="result-error">{{ error }}</p>
-          <!-- {% elif answer %} -->
-           {% elif html_answer %}
+            <div class="alert alert-danger" role="alert">
+              {{ error }}
+            </div>
+          {% elif html_answer %}
             <div class="result-answer">
               <p class="answer-label">Antwoord:</p>
-              <!-- <p class="answer-text">{{ answer }}</p> -->
               <p class="answer-text">{{ html_answer | safe }}</p>
             </div>
           {% else %}
-            <p class="note">Bezig met laden...</p>
+            <p class="text-muted">Bezig met laden...</p>
           {% endif %}
         </div>
-      {% else %}
-        <p class="result-text">Voer een zoekopdracht in de balk hierboven in.</p>
-      {% endif %}
-    </main>
-  </div>
+      </div>
+    {% else %}
+      <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+          <p class="fs-5 text-muted">Voer een zoekopdracht in de balk hierboven in.</p>
+        </div>
+      </div>
+    {% endif %}
+  </main>
 </body>
 </html>

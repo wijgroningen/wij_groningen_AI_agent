@@ -4,33 +4,81 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>WIJ Groningen</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <meta name="robots" content="noindex">
 </head>
 <body>
-  <div class="page">
-    <div class="cases-container">
-      <div class="case-card">
-        <h3 class="case-title">Harry</h3>
-        <p class="case-description">Harry is een jongen van 9, woont bij zijn moeder, ouders zijn gescheiden, wel goede relatie. Harry gaat niet goed op school, weinig contact met anderen soms aggressief. Oma (moeder) woont vlakbij, zou wel meer betrokken willen zijn, vader wil dit niet. Moeder heeft het niet breed en is niet goed in de Nederlandse taal.</p>
-        <button class="case-button" data-description="Harry is een jongen van 9, woont bij zijn moeder, ouders zijn gescheiden, wel goede relatie. Harry gaat niet goed op school, weinig contact met anderen soms aggressief. Oma (moeder) woont vlakbij, zou wel meer betrokken willen zijn, vader wil dit niet. Moeder heeft het niet breed en is niet goed in de Nederlandse taal. Maak een gezinsplan">Maak een gezinsplan</button>
-      </div>
-      <div class="case-card">
-        <h3 class="case-title">Hanna</h3>
-        <p class="case-description">Hanna is 16 jaar en is in 2020 vanuit Syrie naar Nederland gevlucht. Sindsdien woont ze in een AZC en ze wacht nog steeds op een verblijfsvergunning. Ze weet niet of haar ouders nog in leven zijn. Haar 2 broers wonen in Aleppo en ze heeft wekelijks contact met hen. Ze ervaart eenzaamheid en heeft, als gevolg van de oorlog, angstklachten.</p>
-        <button class="case-button" data-description="Hanna is 16 jaar en is in 2020 vanuit Syrie naar Nederland gevlucht. Sindsdien woont ze in een AZC en ze wacht nog steeds op een verblijfsvergunning. Ze weet niet of haar ouders nog in leven zijn. Haar 2 broers wonen in Aleppo en ze heeft wekelijks contact met hen. Ze ervaart eenzaamheid en heeft, als gevolg van de oorlog, angstklachten. Maak een gezinsplan">Maak een gezinsplan</button>
+  <div class="logo-bar">
+    <a href="{{ url_for('handleiding') }}" style="position: absolute; left: 20px; color: white; text-decoration: none; font-size: 14px;">Handleiding</a>
+    <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/>
+  </div>
+
+  <div class="container-lg py-5">
+    <div class="row justify-content-center mb-4">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="warning-box">
+          ⚠️ <strong>Waarschuwing:</strong> Voer geen persoonsgegevens of naar de persoon herleidbare gegevens in.
+        </div>
+        <form action="{{ url_for('search') }}" method="get" class="search-form" role="search">
+          <div class="input-group input-group-lg">
+            <input type="text" id="search-input-main" name="q" class="form-control search-input" placeholder="Zoek in WIJ Groningen..." autofocus>
+            <button class="btn search-button" type="submit">Zoek</button>
+          </div>
+        </form>
       </div>
     </div>
-    <div class="search-box">
-      <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/>
-      <form action="{{ url_for('search') }}" method="get" class="search-form" role="search">
-        <input type="text" id="search-input-main" name="q" class="search-input" placeholder="Zoek in WIJ Groningen..." autofocus>
-        <button type="submit" class="search-button">Zoek</button>
-      </form>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="text-center mb-3">
+          <button id="toggle-examples" class="btn btn-sm toggle-examples-btn" type="button">Toon voorbeelden</button>
+        </div>
+        <div class="examples-container" id="examples-container">
+          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          <div class="col">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title case-title">Harry</h5>
+                <p class="card-text case-description">Harry is een jongen van 9, woont bij zijn moeder, ouders zijn gescheiden, wel goede relatie. Harry gaat niet goed op school, weinig contact met anderen soms aggressief. Oma (moeder) woont vlakbij, zou wel meer betrokken willen zijn, vader wil dit niet. Moeder heeft het niet breed en is niet goed in de Nederlandse taal.</p>
+                <button class="case-button btn btn-primary" data-description="Harry is een jongen van 9, woont bij zijn moeder, ouders zijn gescheiden, wel goede relatie. Harry gaat niet goed op school, weinig contact met anderen soms aggressief. Oma (moeder) woont vlakbij, zou wel meer betrokken willen zijn, vader wil dit niet. Moeder heeft het niet breed en is niet goed in de Nederlandse taal. Maak een gezinsplan">Maak een gezinsplan</button>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title case-title">Hanna</h5>
+                <p class="card-text case-description">Hanna is 16 jaar en is in 2020 vanuit Syrie naar Nederland gevlucht. Sindsdien woont ze in een AZC en ze wacht nog steeds op een verblijfsvergunning. Ze weet niet of haar ouders nog in leven zijn. Haar 2 broers wonen in Aleppo en ze heeft wekelijks contact met hen. Ze ervaart eenzaamheid en heeft, als gevolg van de oorlog, angstklachten.</p>
+                <button class="case-button btn btn-primary" data-description="Hanna is 16 jaar en is in 2020 vanuit Syrie naar Nederland gevlucht. Sindsdien woont ze in een AZC en ze wacht nog steeds op een verblijfsvergunning. Ze weet niet of haar ouders nog in leven zijn. Haar 2 broers wonen in Aleppo en ze heeft wekelijks contact met hen. Ze ervaart eenzaamheid en heeft, als gevolg van de oorlog, angstklachten. Maak een gezinsplan">Maak een gezinsplan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-container" id="results-container">
+      <h4 class="case-title mb-3">Resultaat</h4>
+      <div id="results-content">
+        <!-- Resultaten verschijnen hier -->
+      </div>
     </div>
   </div>
 
   <script>
+    let examplesVisible = false;
+
+    // Toggle button voor voorbeelden
+    document.getElementById('toggle-examples').addEventListener('click', function() {
+      examplesVisible = !examplesVisible;
+      const examplesContainer = document.getElementById('examples-container');
+      examplesContainer.classList.toggle('show');
+      this.textContent = examplesVisible ? 'Verberg voorbeelden' : 'Toon voorbeelden';
+    });
+
+    // Case button click handler
     document.querySelectorAll('.case-button').forEach(button => {
       button.addEventListener('click', function(e) {
         e.preventDefault();
@@ -40,6 +88,145 @@
         searchInput.focus();
       });
     });
+
+    // Search form handler - AJAX request
+    document.querySelector('.search-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const q = document.getElementById('search-input-main').value.trim();
+      
+      if (!q) {
+        return;
+      }
+
+      // Toon resultatencontainer met laadstatus
+      const resultsContainer = document.getElementById('results-container');
+      const resultsContent = document.getElementById('results-content');
+      resultsContent.innerHTML = '<p class="text-muted">Bezig met laden...</p>';
+      resultsContainer.classList.add('show');
+
+      // Scroll naar resultaten
+      resultsContainer.scrollIntoView({ behavior: 'smooth' });
+
+      // AJAX request
+      fetch('/search?q=' + encodeURIComponent(q), {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          resultsContent.innerHTML = `<div class="alert alert-danger" role="alert">${data.error}</div>`;
+        } else if (data.html_answer) {
+          resultsContent.innerHTML = `
+            <p class="result-question">Vraag: <strong>${escapeHtml(data.q)}</strong></p>
+            <div class="result-answer">
+              <p class="answer-label">Antwoord:</p>
+              <div class="answer-text">${data.html_answer}</div>
+            </div>
+          `;
+          // Voeg copy-knoppen toe aan alle kopjes
+          addCopyButtonsToHeadings(resultsContent);
+        } else {
+          resultsContent.innerHTML = '<p class="text-muted">Geen antwoord ontvangen.</p>';
+        }
+      })
+      .catch(error => {
+        resultsContent.innerHTML = `<div class="alert alert-danger" role="alert">Fout bij verzoek: ${error.message}</div>`;
+        console.error('Fout:', error);
+      });
+    });
+
+    // Utility function to escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Voeg copy-knoppen toe aan kopjes
+    function addCopyButtonsToHeadings(container) {
+      const answerText = container.querySelector('.answer-text');
+      if (!answerText) return;
+
+      const headings = answerText.querySelectorAll('h2, h3, h4, h5, h6');
+      
+      headings.forEach(heading => {
+        // Maak een wrapper als het nog niet bestaat
+        const wrapper = document.createElement('div');
+        wrapper.className = 'heading-with-copy';
+        
+        const button = document.createElement('button');
+        button.className = 'copy-section-btn';
+        button.textContent = 'Kopieëren';
+        button.type = 'button';
+        
+        heading.parentNode.insertBefore(wrapper, heading);
+        wrapper.appendChild(heading);
+        wrapper.appendChild(button);
+        
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          const text = extractSectionText(heading);
+          copyToClipboard(text, button);
+        });
+      });
+    }
+
+    // Extract tekst van een kopje tot het volgende kopje op hetzelfde of hoger niveau
+    function extractSectionText(heading) {
+      let text = '';
+      const headingLevel = parseInt(heading.tagName[1]);
+      
+      // De heading zit in een wrapper (heading-with-copy), dus we moeten vanaf daar verder gaan
+      const wrapper = heading.parentNode;
+      let current = wrapper.nextElementSibling;
+      
+      while (current) {
+        // Stop als we een heading-with-copy wrapper tegenkomen (volgende kopje)
+        if (current.classList && current.classList.contains('heading-with-copy')) {
+          break;
+        }
+        
+        // Stop als we een losse heading tegenkomen (mocht het voorkomen)
+        if (current.tagName && current.tagName.match(/^H[1-6]$/)) {
+          const currentLevel = parseInt(current.tagName[1]);
+          if (currentLevel <= headingLevel) {
+            break;
+          }
+        }
+        
+        // Voeg inhoud toe
+        text += current.textContent + '\n\n';
+        current = current.nextElementSibling;
+      }
+      
+      return text.trim();
+    }
+
+    // Kopieer naar clipboard
+    function copyToClipboard(text, button) {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = button.textContent;
+        button.textContent = '✓ Gekopieerd!';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('copied');
+        }, 2000);
+      }).catch(err => {
+        console.error('Fout bij kopiëren:', err);
+        button.textContent = 'Fout bij kopiëren';
+        setTimeout(() => {
+          button.textContent = 'Kopieëren';
+        }, 2000);
+      });
+    }
   </script>
+
+  <footer>
+    Powered by MistralAI
+  </footer>
 </body>
 </html>

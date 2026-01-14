@@ -11,10 +11,10 @@ MAX_CONTEXT_CHARS = 8000  # veilig voor mistral-small
 # =========================
 # Config & API key
 # =========================
-
 FALLBACK_API_KEY = "test"
 
 API_KEY = os.environ.get("MISTRAL_API_KEY", FALLBACK_API_KEY)
+API_KEY = "AEi0xtldgbjZO7ceNndyv2Bi47bFAgdY" # LATER VERVANGEN!!!!!
 
 if API_KEY == FALLBACK_API_KEY:
     print(
@@ -29,7 +29,6 @@ client = MistralClient(api_key=API_KEY)
 # Agent prompt
 # lees het agent_prompt.md bestand
 # =========================
-
 def load_agent_prompt():
     try:
         with open("agent_prompt.md", "r", encoding="utf-8") as f:
@@ -46,7 +45,6 @@ AGENT_PROMPT = load_agent_prompt()
 # Support files 
 # Lees alle docx en pdf bestanden in de agent_files map
 # =========================
-
 def read_docx(path):
     '''Lees tekst van een .docx bestand'''
     doc = Document(path)
@@ -90,7 +88,6 @@ def load_agent_files_text():
 # =========================
 # Flask app
 # =========================
-
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
 
@@ -100,6 +97,17 @@ def home():
     if q:
         return redirect(url_for("search", q=q))
     return render_template("index.html")
+
+
+@app.route("/handleiding", methods=["GET"])
+def handleiding():
+    try:
+        with open("agent_prompt.md", "r", encoding="utf-8") as f:
+            md_content = f.read()
+        html_content = markdown.markdown(md_content, extensions=['tables', 'fenced_code', 'nl2br'])
+        return render_template("handleiding.html", html_content=html_content)
+    except FileNotFoundError:
+        return render_template("handleiding.html", html_content="<p>Handleiding niet gevonden.</p>", error=True)
 
 
 @app.route("/search", methods=["GET"])
@@ -142,6 +150,14 @@ def search():
         except Exception as e:
             error = f"Fout bij Mistral API-call: {str(e)}"
 
+    # Check if request wants JSON (AJAX)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return {
+            'q': q,
+            'html_answer': html_answer,
+            'error': error
+        }
+    
     return render_template(
         "results.html",
         q=q,
