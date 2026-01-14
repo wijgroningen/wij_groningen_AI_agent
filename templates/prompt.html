@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Prompt — WIJ Groningen</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    :root {
+      --green: #009e4d;
+      --green-dark: #226644;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .back-link:hover {
+      color: var(--green-dark);
+    }
+    .handleiding-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .handleiding-content {
+      background-color: #f8f9fa;
+      padding: 40px;
+      border-radius: 8px;
+      line-height: 1.8;
+    }
+    .handleiding-content h1 {
+      color: var(--green);
+      border-bottom: 3px solid var(--green);
+      padding-bottom: 15px;
+      margin-bottom: 30px;
+    }
+    .handleiding-content h2 {
+      color: var(--green-dark);
+      margin-top: 40px;
+      margin-bottom: 15px;
+      border-left: 4px solid var(--green);
+      padding-left: 15px;
+    }
+    .handleiding-content h3 {
+      color: #333;
+      margin-top: 25px;
+      margin-bottom: 12px;
+    }
+    .handleiding-content p {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .handleiding-content ul, .handleiding-content ol {
+      margin-left: 20px;
+      margin-bottom: 15px;
+    }
+    .handleiding-content li {
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .handleiding-content code {
+      background-color: #e8e8e8;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    .handleiding-content pre {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 15px;
+    }
+    .handleiding-content blockquote {
+      border-left: 4px solid var(--green);
+      padding-left: 15px;
+      margin-left: 0;
+      color: #666;
+      font-style: italic;
+    }
+  </style>
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="logo-bar">
+    <button class="hamburger-menu" id="hamburger-menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <a href="{{ url_for('home') }}" style="cursor: pointer;">
+      <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/>
+    </a>
+  </div>
+
+  <nav class="mobile-menu" id="mobile-menu">
+    <ul>
+      <li><a href="{{ url_for('algemene_informatie') }}">Algemene informatie</a></li>
+      <li><a href="{{ url_for('prompt') }}">Prompt</a></li>
+      <li><a href="{{ url_for('context_files') }}">Context bestanden</a></li>
+    </ul>
+  </nav>
+
+  <div class="container-lg py-5">
+    <div class="handleiding-container">
+      <a href="{{ url_for('home') }}" class="back-link">← Terug naar home</a>
+    <!-- Uitleg AI Agent -->
+    <div class="handleiding-content mb-4">
+      <h2>Wat is een AI Agent?</h2>
+      <p>
+        Een AI Agent is een digitale assistent die gebruikmaakt van kunstmatige intelligentie om gebruikers te ondersteunen bij een specifieke taak.
+        In dit geval helpt de AI Agent bij het opstellen, structureren en verbeteren van ondersteuningsplannen.
+        De agent combineert vaste instructies met de informatie die jij aanlevert en de beschikbare contextbestanden.
+      </p>
+      <p>
+        De AI Agent neemt geen beslissingen en denkt niet zelfstandig. Jij blijft als professional altijd verantwoordelijk
+        voor de inhoud en de uiteindelijke vastlegging in WIZ.
+      </p>
+
+      <h2>Wat is een prompt?</h2>
+      <p>
+        Een prompt is de instructie of vraag die je aan de AI Agent geeft. Dit kan een korte opdracht zijn,
+        maar ook een uitgebreide beschrijving van een situatie, bijvoorbeeld informatie uit gesprekken met een gezin.
+      </p>
+      <p>
+        Hoe duidelijker en concreter de prompt, hoe beter de AI Agent je kan ondersteunen.
+        Een goede prompt bevat bij voorkeur:
+      </p>
+      <ul>
+        <li>Relevante feiten en observaties</li>
+        <li>De context van de situatie of hulpvraag</li>
+        <li>Wat je van de AI Agent verwacht (bijvoorbeeld structureren, samenvatten of herschrijven)</li>
+      </ul>
+
+      <h2>Hoe werkt het in de praktijk?</h2>
+      <p>
+        De AI Agent doorloopt globaal de volgende stappen:
+      </p>
+      <ol>
+        <li>De prompt wordt gelezen en geïnterpreteerd.</li>
+        <li>De agent combineert jouw prompt met vaste instructies en eventuele contextbestanden.</li>
+        <li>Op basis hiervan genereert de AI een voorstel voor tekst of structuur.</li>
+      </ol>
+      <p>
+        De gegenereerde output is bedoeld als ondersteuning. Lees het resultaat altijd zorgvuldig door
+        voordat je het verwerkt in WIZ en pas het aan waar nodig.
+        Sla deze informatie nooit op buiten de daarvoor bestemde systemen.
+      </p>
+    </div>
+    <!-- Einde uitleg AI Agent -->
+
+      <div class="handleiding-content">
+        {% if error %}
+          <div class="alert alert-danger" role="alert">
+            Het promptbestand kon niet worden gevonden.
+          </div>
+        {% else %}
+          {{ html_content | safe }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Hamburger menu toggle
+    const hamburgerMenu = document.getElementById('hamburger-menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    hamburgerMenu.addEventListener('click', function() {
+      mobileMenu.classList.toggle('active');
+      hamburgerMenu.classList.toggle('active');
+    });
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('.mobile-menu a').forEach(link => {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.remove('active');
+        hamburgerMenu.classList.remove('active');
+      });
+    });
+  </script>
+
+  <footer>
+    Powered by MistralAI
+  </footer>
+</body>
+</html>

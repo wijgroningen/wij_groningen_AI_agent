@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Interactie Log — Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="mb-4">Interacties (laatste 100)</h1>
+    <table class="table table-bordered table-striped table-sm">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Datum/tijd</th>
+          <th>Gebruiker</th>
+          <th>Invoer</th>
+          <th>Uitvoer</th>
+          <th>Privacy-flag</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.id }}</td>
+          <td>{{ row.created_at.strftime('%Y-%m-%d %H:%M:%S') if row.created_at else '' }}</td>
+          <td>{{ row.user or '' }}</td>
+          <td style="max-width:300px; white-space:pre-wrap;">{{ row.input_text }}</td>
+          <td style="max-width:300px; white-space:pre-wrap;">{{ row.output_text }}</td>
+          <td>{{ 'Ja' if row.privacy_flag else 'Nee' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="text-muted">Alleen lokaal zichtbaar. Voor privacy: geen persoonsgegevens in deze tabel!</p>
+  </div>
+</body>
+</html>

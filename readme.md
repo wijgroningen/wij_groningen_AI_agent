@@ -1,7 +1,18 @@
 # WIJ Groningen agent
 
-[]
-- transparantie: alle documenten die gebruikt worden voor de agent moeten publiekelijk beschikbaar zijn
+## functionaliteiten
+- afvangen van naar een persoon herleidbare gegevens (todo)
+- invoer en uitvoer worden opgeslagen tbv trainingsdoeleinden en privacy breaches
+- transparantie: alle documenten die gebruikt worden voor de agent zijn publiekelijk beschikbaar
+
+
+## CoPilot vs Build
+- Build kan invoer en uitvoer opslaan
+- Build kan beheerst persoonsgegevens afvangen (en loggen)
+- Build kan uitgebouwd worden naar een 'interne google'
+- Build draait op een Europees model (Mistral)
+- Build vraag beheerskosten en kennis
+
 
 ## Tokens mij MistralAI
 Een token is ongeveer 4 tekens. 100 tokens komen overeen met ongeveer 75 woorden.

@@ -10,9 +10,23 @@
 </head>
 <body>
   <div class="logo-bar">
-    <a href="{{ url_for('handleiding') }}" style="position: absolute; left: 20px; color: white; text-decoration: none; font-size: 14px;">Handleiding</a>
-    <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/>
+    <button class="hamburger-menu" id="hamburger-menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <a href="{{ url_for('home') }}" style="cursor: pointer;">
+      <img src="{{ url_for('static', filename='wij_groningen_logo.png') }}" alt="WIJ Groningen" class="logo"/>
+    </a>
   </div>
+
+  <nav class="mobile-menu" id="mobile-menu">
+    <ul>
+      <li><a href="{{ url_for('algemene_informatie') }}">Algemene informatie</a></li>
+      <li><a href="{{ url_for('prompt') }}">Prompt</a></li>
+      <li><a href="{{ url_for('context_files') }}">Context bestanden</a></li>
+    </ul>
+  </nav>
 
   <div class="container-lg py-5">
     <div class="row justify-content-center mb-4">
@@ -68,6 +82,23 @@
   </div>
 
   <script>
+    // Hamburger menu toggle
+    const hamburgerMenu = document.getElementById('hamburger-menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    hamburgerMenu.addEventListener('click', function() {
+      mobileMenu.classList.toggle('active');
+      hamburgerMenu.classList.toggle('active');
+    });
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('.mobile-menu a').forEach(link => {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.remove('active');
+        hamburgerMenu.classList.remove('active');
+      });
+    });
+
     let examplesVisible = false;
 
     // Toggle button voor voorbeelden

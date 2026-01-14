@@ -32,7 +32,6 @@ def home():
 - A Python virtual environment may exist under `venv/` (seen in local workspace). Keep `.venv` or `venv` out of commits; follow repo gitignore if present.
 
 # Safety and non-goals
-- Do not assume additional services (databases, message queues) exist — none are declared in `requirements.txt` or `app.py`.
 - Avoid adding large frameworks or complex scaffolding without prior approval from the repo owner.
 
 # Suggested first tasks for an AI contributor

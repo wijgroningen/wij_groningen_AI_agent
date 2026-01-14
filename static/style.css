@@ -4,6 +4,77 @@
       --green-dark: #226644;
       --white: #ffffff;
     }
+
+    /* Hamburger menu styles */
+    .hamburger-menu {
+      position: absolute;
+      left: 20px;
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .hamburger-menu span {
+      width: 25px;
+      height: 3px;
+      background-color: white;
+      transition: all 0.3s ease;
+      display: block;
+    }
+
+    .hamburger-menu.active span:nth-child(1) {
+      transform: rotate(45deg) translate(10px, 10px);
+    }
+
+    .hamburger-menu.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger-menu.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 74px;
+      left: -100%;
+      width: 100%;
+      background-color: var(--green-dark);
+      transition: left 0.3s ease;
+      z-index: 999;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-menu.active {
+      left: 0;
+    }
+
+    .mobile-menu ul {
+      list-style: none;
+      padding: 20px 0;
+      margin: 0;
+    }
+
+    .mobile-menu li {
+      margin: 0;
+    }
+
+    .mobile-menu a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 15px 20px;
+      transition: background-color 0.2s;
+    }
+
+    .mobile-menu a:hover {
+      background-color: var(--green);
+    }
+
     body {
       background-color: #ffffff;
       display: flex;
@@ -172,5 +243,19 @@
       padding: 15px 20px;
       margin-top: 40px;
       font-size: 13px;
+    }
+    .handleiding-content a {
+      color: var(--green);
+      text-decoration: none;
+      border-bottom: 1px solid var(--green);
+    }
+    .handleiding-content a:hover {
+      color: var(--green-dark);
+      border-bottom-color: var(--green-dark);
+    }
+    .handleiding-content hr {
+      border: none;
+      border-top: 2px solid #ddd;
+      margin: 40px 0;
     }
   /* </style> */

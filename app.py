@@ -4,8 +4,32 @@ from mistralai.client import MistralClient
 from docx import Document
 from pypdf import PdfReader
 import markdown
+from flask import send_file
 
-AGENT_FILES_DIR = "agent_files"
+# Database setup
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
+from sqlalchemy.orm import declarative_base, sessionmaker
+from datetime import datetime
+
+Base = declarative_base()
+
+class Interaction(Base):
+    __tablename__ = 'interactions'
+    id = Column(Integer, primary_key=True)
+    user = Column(String(64), nullable=True)  # optioneel, voor toekomstige gebruikersauth
+    input_text = Column(Text, nullable=False)
+    output_text = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    privacy_flag = Column(Boolean, default=False)  # voor toekomstige privacy-detectie
+    # Voeg hier eenvoudig extra velden toe in de toekomst
+
+# SQLite database (later makkelijk te vervangen door Postgres)
+engine = create_engine('sqlite:///interactions.db')
+Base.metadata.create_all(engine)
+SessionLocal = sessionmaker(bind=engine)
+
+
+AGENT_FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_files")
 MAX_CONTEXT_CHARS = 8000  # veilig voor mistral-small
 
 # =========================
@@ -99,15 +123,38 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/handleiding", methods=["GET"])
-def handleiding():
+@app.route("/algemene-informatie", methods=["GET"])
+def algemene_informatie():
+    return render_template("algemene_informatie.html")
+
+
+@app.route("/prompt", methods=["GET"])
+def prompt():
     try:
         with open("agent_prompt.md", "r", encoding="utf-8") as f:
             md_content = f.read()
         html_content = markdown.markdown(md_content, extensions=['tables', 'fenced_code', 'nl2br'])
-        return render_template("handleiding.html", html_content=html_content)
+        
+        return render_template("prompt.html", html_content=html_content, error=False)
     except FileNotFoundError:
-        return render_template("handleiding.html", html_content="<p>Handleiding niet gevonden.</p>", error=True)
+        return render_template("prompt.html", html_content="<p>Prompt niet gevonden.</p>", error=True)
+
+
+@app.route("/handleiding", methods=["GET"])
+def handleiding():
+    return redirect(url_for("prompt"))
+
+
+@app.route("/context-files", methods=["GET"])
+def context_files():
+    # Laad list van agent_files
+    agent_files = []
+    if os.path.isdir(AGENT_FILES_DIR):
+        for filename in sorted(os.listdir(AGENT_FILES_DIR)):
+            if filename.lower().endswith(('.docx', '.pdf')):
+                agent_files.append(filename)
+    
+    return render_template("context_files.html", agent_files=agent_files)
 
 
 @app.route("/search", methods=["GET"])
@@ -115,6 +162,9 @@ def search():
     q = request.args.get("q", "")
     answer = ""
     error = ""
+
+    # Voor nu: geen gebruikersauthenticatie, dus user=None
+    user = None
 
     if q:
         try:
@@ -141,9 +191,20 @@ def search():
                 temperature=0.2,  # temperature bepaalt hoe voorspelbaar of creatief het taalmodel antwoordt.
             )
 
+
             if response.choices:
                 answer = response.choices[0].message.content
                 html_answer = markdown.markdown(answer)
+                # Sla interactie op in database
+                db = SessionLocal()
+                db.add(Interaction(
+                    user=user,
+                    input_text=q,
+                    output_text=answer,
+                    # privacy_flag kan later automatisch bepaald worden
+                ))
+                db.commit()
+                db.close()
             else:
                 error = "Geen antwoord ontvangen van het model."
 
@@ -166,6 +227,32 @@ def search():
         error=error,
         )
 
+
+@app.route("/download/<filename>", methods=["GET"])
+def download_file(filename):
+    """Download een bestand uit agent_files"""
+    # Valideer filename - alleen letters, nummers, punten en underscores toegestaan
+    if not all(c.isalnum() or c in '._-' for c in filename):
+        return "Ongeldig bestandsnaam", 400
+    
+    filepath = os.path.join(AGENT_FILES_DIR, filename)
+    
+    # Zorg ervoor dat het bestand echt in agent_files zit
+    if not os.path.abspath(filepath).startswith(os.path.abspath(AGENT_FILES_DIR)):
+        return "Bestand niet gevonden", 404
+    
+    if not os.path.exists(filepath):
+        return "Bestand niet gevonden", 404
+    
+    return send_file(filepath, as_attachment=True)
+
+
+@app.route("/admin/interactions")
+def admin_interactions():
+    db = SessionLocal()
+    rows = db.query(Interaction).order_by(Interaction.created_at.desc()).limit(100).all()
+    db.close()
+    return render_template("admin_interactions.html", rows=rows)
 
 if __name__ == "__main__":
     app.run(debug=True)

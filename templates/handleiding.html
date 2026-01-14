@@ -105,6 +105,17 @@
         {% else %}
           {{ html_content | safe }}
         {% endif %}
+
+        {% if agent_files %}
+          <hr>
+          <h2>Ondersteunende bestanden</h2>
+          <p>Download de volgende bestanden die bij deze handleiding horen:</p>
+          <ul>
+            {% for filename in agent_files %}
+              <li><a href="{{ url_for('download_file', filename=filename) }}">{{ filename }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
       </div>
     </div>
   </div>
