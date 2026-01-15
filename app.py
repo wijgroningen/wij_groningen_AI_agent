@@ -38,7 +38,7 @@ MAX_CONTEXT_CHARS = 8000  # veilig voor mistral-small
 FALLBACK_API_KEY = "test"
 
 API_KEY = os.environ.get("MISTRAL_API_KEY", FALLBACK_API_KEY)
-API_KEY = "AEi0xtldgbjZO7ceNndyv2Bi47bFAgdY" # LATER VERVANGEN!!!!!
+
 
 if API_KEY == FALLBACK_API_KEY:
     print(
