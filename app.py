@@ -25,7 +25,9 @@ class Interaction(Base):
     output_text = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     privacy_flag = Column(Boolean, default=False)  # voor toekomstige privacy-detectie
-    # Voeg hier eenvoudig extra velden toe in de toekomst
+    model_used = Column(String(50), nullable=True)  # bijv. "qwen2.5:7b"
+    response_time_seconds = Column(Integer, nullable=True)  # wachttijd in seconden
+    plan_type = Column(String(30), nullable=True)  # gezinsanalyse/evaluatie/aanvraag
 
 # SQLite database (later makkelijk te vervangen door Postgres)
 engine = create_engine('sqlite:///interactions.db')
@@ -41,9 +43,9 @@ MAX_CONTEXT_CHARS = 8000  # veilig voor mistral-small
 # =========================
 print("\n🚀 Initializing Ollama client...")
 print("   Make sure Ollama is running: ollama serve")
-print("   Then in another terminal: ollama pull mistral\n")
+print("   Then in another terminal: ollama pull\n")
 
-OLLAMA_MODEL = "mistral"
+OLLAMA_MODEL = "qwen2.5:7b"  # Sneller model dan mistral, beter instruction-following
 OLLAMA_BASE_URL = "http://localhost:11434"
 
 try:
@@ -140,7 +142,7 @@ def retrieve_relevant_context(query, top_k=3):
 # Agent prompt
 # lees het agent_prompt.md bestand
 # =========================
-def load_agent_prompt(filename="agent_prompt_compact.md"):
+def load_agent_prompt(filename="agent_prompts/agent_prompt_v2.md"):
     try:
         with open(filename, "r", encoding="utf-8") as f:
             return f.read().strip()
@@ -149,6 +151,16 @@ def load_agent_prompt(filename="agent_prompt_compact.md"):
             "Het promptbestand kon niet worden gevonden. "
             "Breek de applicatie af en geef een melding terug aan de gebruiker."
         )
+
+def get_agent_prompt_for_type(plan_type):
+    """Laad de juiste prompt op basis van plan type"""
+    type_map = {
+        "gezinsanalyse": "agent_prompts/agent_prompt_gezinsanalyse.md",
+        "evaluatie": "agent_prompts/agent_prompt_evaluatie.md",
+        "aanvraag": "agent_prompts/agent_prompt_aanvraag.md",
+    }
+    filename = type_map.get(plan_type, "agent_prompts/agent_prompt_v2.md")
+    return load_agent_prompt(filename)
 
 AGENT_PROMPT = load_agent_prompt()
 
@@ -270,6 +282,7 @@ def rebuild_vector_db():
 @app.route("/search", methods=["GET"])
 def search():
     q = request.args.get("q", "")
+    plan_type = request.args.get("type", "gezinsanalyse")  # default: gezinsanalyse
     answer = ""
     html_answer = ""
     error = ""
@@ -281,10 +294,14 @@ def search():
         try:
             # Retrieve relevant context using vector database (RAG)
             print(f"🔍 Searching for relevant context for: '{q}'")
+            print(f"   Plan type: {plan_type}")
             context_text = retrieve_relevant_context(q, top_k=1)
 
-            # Maak prompt in Mistral format
-            prompt = f"""[INST] {AGENT_PROMPT}
+            # Laad de juiste prompt voor dit type
+            agent_prompt = get_agent_prompt_for_type(plan_type)
+            
+            # Maak prompt
+            prompt = f"""{agent_prompt}
             
 Gebruik onderstaande context bij het beantwoorden van de vraag.
 Als de context niet relevant is, negeer deze.
@@ -293,7 +310,7 @@ CONTEXT:
 {context_text}
 
 VRAAG:
-{q} [/INST]"""
+{q}"""
 
             print(f"📊 Generating response via Ollama...")
             print(f"   Prompt length: {len(prompt)} chars")
@@ -311,8 +328,8 @@ VRAAG:
                     stream=False,
                     options={
                         "temperature": 0.3,
-                        "top_p": 0.95,
-                        "num_predict": 1000,
+                        "top_p": 0.9,
+                        "num_predict": 600,
                         "num_ctx": 2048,
                     }
                 )
@@ -329,18 +346,26 @@ VRAAG:
             
             html_answer = markdown.markdown(answer)
             # Sla interactie op in database
-            db = SessionLocal()
-            db.add(Interaction(
-                user=user,
-                input_text=q,
-                output_text=answer,
-                # privacy_flag kan later automatisch bepaald worden
-            ))
-            db.commit()
-            db.close()
+            try:
+                db = SessionLocal()
+                db.add(Interaction(
+                    user=user,
+                    input_text=q,
+                    output_text=answer,
+                    model_used=OLLAMA_MODEL,
+                    response_time_seconds=int(elapsed),
+                    plan_type=plan_type,
+                    # privacy_flag kan later automatisch bepaald worden
+                ))
+                db.commit()
+                db.close()
+                print("💾 Saved to database")
+            except Exception as db_error:
+                print(f"❌ Database error: {db_error}")
 
         except Exception as e:
             error = f"Fout bij Ollama inference: {str(e)}"
+            print(f"❌ Outer error: {e}")
             html_answer = ""
 
     # Check if request wants JSON (AJAX)

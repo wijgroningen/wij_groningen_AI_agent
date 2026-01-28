@@ -16,6 +16,9 @@
           <th>ID</th>
           <th>Datum/tijd</th>
           <th>Gebruiker</th>
+          <th>Type</th>
+          <th>Model</th>
+          <th>Wachttijd (s)</th>
           <th>Invoer</th>
           <th>Uitvoer</th>
           <th>Privacy-flag</th>
@@ -27,6 +30,9 @@
           <td>{{ row.id }}</td>
           <td>{{ row.created_at.strftime('%Y-%m-%d %H:%M:%S') if row.created_at else '' }}</td>
           <td>{{ row.user or '' }}</td>
+          <td><small>{{ row.plan_type or '-' }}</small></td>
+          <td><small>{{ row.model_used or '-' }}</small></td>
+          <td><small>{{ row.response_time_seconds or '-' }}</small></td>
           <td style="max-width:300px; white-space:pre-wrap;">{{ row.input_text }}</td>
           <td style="max-width:300px; white-space:pre-wrap;">{{ row.output_text }}</td>
           <td>{{ 'Ja' if row.privacy_flag else 'Nee' }}</td>
