@@ -5,12 +5,16 @@
 /__pycache__
 /instance
 /documents
-documentation/
+/documentation
+/chroma_db
 
 # files
 *.pyc
 apikey.txt
 test_mistral.py
+mistral_agent.py
+config.py
+interactions.db
 
 # log files
 *.log

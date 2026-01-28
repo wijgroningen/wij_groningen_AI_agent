@@ -1,16 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
-from mistralai.client import MistralClient
+import ollama
 from docx import Document
 from pypdf import PdfReader
 import markdown
 from flask import send_file
-
-# Database setup
+from config import MISTRAL_API_KEY
+import chromadb
+from sentence_transformers import SentenceTransformer
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 
+# =========================
+# Database setup
+# =========================
 Base = declarative_base()
 
 class Interaction(Base):
@@ -33,29 +37,112 @@ AGENT_FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agen
 MAX_CONTEXT_CHARS = 8000  # veilig voor mistral-small
 
 # =========================
-# Config & API key
+# Config & Ollama Setup
 # =========================
-FALLBACK_API_KEY = "test"
+print("\n🚀 Initializing Ollama client...")
+print("   Make sure Ollama is running: ollama serve")
+print("   Then in another terminal: ollama pull mistral\n")
 
-API_KEY = os.environ.get("MISTRAL_API_KEY", FALLBACK_API_KEY)
+OLLAMA_MODEL = "mistral"
+OLLAMA_BASE_URL = "http://localhost:11434"
 
+try:
+    # Test connection to Ollama
+    client = ollama.Client(host=OLLAMA_BASE_URL)
+    print("✅ Connected to Ollama!\n")
+except Exception as e:
+    print(f"⚠️ Could not connect to Ollama: {e}")
+    print("   Please start Ollama: ollama serve")
+    print("   And pull the model: ollama pull mistral\n")
 
-if API_KEY == FALLBACK_API_KEY:
-    print(
-        "⚠️ Warning: using fallback API key. "
-        "Set the MISTRAL_API_KEY environment variable in production."
+# =========================
+# Vector Database Setup (RAG)
+# =========================
+print("🔄 Initializing Vector Database...")
+try:
+    # Laad embedding model
+    embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+    
+    # Initialiseer Chroma vector database met persistentie
+    chroma_client = chromadb.PersistentClient(
+        path="./chroma_db"
     )
+    
+    vector_collection = chroma_client.get_or_create_collection(
+        name="agent_documents",
+        metadata={"hnsw:space": "cosine"}
+    )
+    print("✅ Vector Database initialized!\n")
+except Exception as e:
+    print(f"❌ Fout bij vector database setup: {e}")
+    raise
 
-print("Using API key:", API_KEY[:6] + "..." if API_KEY != "test" else "FALLBACK (test)")
-client = MistralClient(api_key=API_KEY)
+def chunk_text(text, chunk_size=300, overlap=50):
+    """Split tekst in overlapping chunks"""
+    chunks = []
+    for i in range(0, len(text), chunk_size - overlap):
+        chunks.append(text[i:i + chunk_size])
+    return chunks
+
+def load_documents_to_vector_db():
+    """Laad alle documenten in vector database"""
+    if not os.path.isdir(AGENT_FILES_DIR):
+        return 0
+    
+    chunk_id = 0
+    for filename in os.listdir(AGENT_FILES_DIR):
+        path = os.path.join(AGENT_FILES_DIR, filename)
+        
+        try:
+            text = ""
+            if filename.lower().endswith(".docx"):
+                text = read_docx(path)
+            elif filename.lower().endswith(".pdf"):
+                text = read_pdf(path)
+            else:
+                continue
+            
+            # Split in chunks
+            chunks = chunk_text(text)
+            
+            # Add chunks to vector database
+            for i, chunk in enumerate(chunks):
+                chunk_id += 1
+                embedding = embedding_model.encode(chunk, convert_to_numpy=True)
+                vector_collection.add(
+                    ids=[f"{filename}_chunk_{i}"],
+                    embeddings=[embedding],
+                    documents=[chunk],
+                    metadatas=[{"source": filename, "chunk": i}]
+                )
+        
+        except Exception as e:
+            print(f"⚠️ Kon bestand niet laden ({filename}): {e}")
+    
+    print(f"📚 Loaded {chunk_id} chunks into vector database")
+    return chunk_id
+
+def retrieve_relevant_context(query, top_k=3):
+    """Retrieve relevante chunks from vector database"""
+    query_embedding = embedding_model.encode(query, convert_to_numpy=True)
+    
+    results = vector_collection.query(
+        query_embeddings=[query_embedding],
+        n_results=top_k
+    )
+    
+    if results and results['documents']:
+        context_chunks = results['documents'][0]
+        return "\n\n".join(context_chunks)
+    return ""
 
 # =========================
 # Agent prompt
 # lees het agent_prompt.md bestand
 # =========================
-def load_agent_prompt():
+def load_agent_prompt(filename="agent_prompt_compact.md"):
     try:
-        with open("agent_prompt.md", "r", encoding="utf-8") as f:
+        with open(filename, "r", encoding="utf-8") as f:
             return f.read().strip()
     except FileNotFoundError:
         return (
@@ -114,6 +201,14 @@ def load_agent_files_text():
 # =========================
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
+# Laad documenten in vector database bij startup (alleen eerste keer)
+if vector_collection.count() == 0:
+    print("📖 First run: building vector DB...")
+    doc_count = load_documents_to_vector_db()
+    print(f"✅ Vector database ready with {doc_count} chunks!\n")
+else:
+    print(f"⚡ Vector DB already exists with {vector_collection.count()} chunks, skipping build\n")
+
 
 @app.route("/", methods=["GET"])
 def home():
@@ -157,10 +252,26 @@ def context_files():
     return render_template("context_files.html", agent_files=agent_files)
 
 
+@app.route("/rebuild-vector-db", methods=["POST"])
+def rebuild_vector_db():
+    """Reset en herbouw de vector database"""
+    try:
+        # Verwijder alle bestaande documenten
+        vector_collection.delete(
+            ids=vector_collection.get()['ids']
+        )
+        # Herbouw database
+        doc_count = load_documents_to_vector_db()
+        return {"success": True, "message": f"Vector database rebuilt with {doc_count} chunks"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
+
 @app.route("/search", methods=["GET"])
 def search():
     q = request.args.get("q", "")
     answer = ""
+    html_answer = ""
     error = ""
 
     # Voor nu: geen gebruikersauthenticatie, dus user=None
@@ -168,48 +279,69 @@ def search():
 
     if q:
         try:
-            context_text = load_agent_files_text()
+            # Retrieve relevant context using vector database (RAG)
+            print(f"🔍 Searching for relevant context for: '{q}'")
+            context_text = retrieve_relevant_context(q, top_k=1)
 
-            response = client.chat(
-                model="mistral-small-latest",
-                messages=[
-                    {"role": "system", "content": AGENT_PROMPT},
-                    {
-                        "role": "user",
-                        "content": f"""
-            Gebruik onderstaande context bij het beantwoorden van de vraag.
-            Als de context niet relevant is, negeer deze.
+            # Maak prompt in Mistral format
+            prompt = f"""[INST] {AGENT_PROMPT}
+            
+Gebruik onderstaande context bij het beantwoorden van de vraag.
+Als de context niet relevant is, negeer deze.
 
-            CONTEXT:
-            {context_text}
+CONTEXT:
+{context_text}
 
-            VRAAG:
-            {q}
-            """
-                    },
-                ],
-                temperature=0.2,  # temperature bepaalt hoe voorspelbaar of creatief het taalmodel antwoordt.
-            )
+VRAAG:
+{q} [/INST]"""
 
-
-            if response.choices:
-                answer = response.choices[0].message.content
-                html_answer = markdown.markdown(answer)
-                # Sla interactie op in database
-                db = SessionLocal()
-                db.add(Interaction(
-                    user=user,
-                    input_text=q,
-                    output_text=answer,
-                    # privacy_flag kan later automatisch bepaald worden
-                ))
-                db.commit()
-                db.close()
-            else:
-                error = "Geen antwoord ontvangen van het model."
+            print(f"📊 Generating response via Ollama...")
+            print(f"   Prompt length: {len(prompt)} chars")
+            print(f"   Model: {OLLAMA_MODEL}")
+            print(f"   Status: waiting for response...")
+            
+            # Call Ollama API met timeout
+            try:
+                import time
+                start_time = time.time()
+                
+                response = client.generate(
+                    model=OLLAMA_MODEL,
+                    prompt=prompt,
+                    stream=False,
+                    options={
+                        "temperature": 0.3,
+                        "top_p": 0.95,
+                        "num_predict": 1000,
+                        "num_ctx": 2048,
+                    }
+                )
+                answer = response['response'].strip()
+                
+                elapsed = time.time() - start_time
+                print(f"✅ Response received in {elapsed:.1f}s")
+                print(f"   Response length: {len(answer)} chars")
+            except Exception as e:
+                print(f"❌ Ollama error: {e}")
+                answer = f"Fout bij het genereren van antwoord: {str(e)}"
+            
+            print("✅ Response generated!")
+            
+            html_answer = markdown.markdown(answer)
+            # Sla interactie op in database
+            db = SessionLocal()
+            db.add(Interaction(
+                user=user,
+                input_text=q,
+                output_text=answer,
+                # privacy_flag kan later automatisch bepaald worden
+            ))
+            db.commit()
+            db.close()
 
         except Exception as e:
-            error = f"Fout bij Mistral API-call: {str(e)}"
+            error = f"Fout bij Ollama inference: {str(e)}"
+            html_answer = ""
 
     # Check if request wants JSON (AJAX)
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
